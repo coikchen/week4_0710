@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <title>Hello, world!</title>
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <form id="login_token" class="col-8 offset-2" v-on:submit.prevent="signin">
+        <div class="form-group">
+          <label for="exampleInputEmail1">電子信箱Email address</label>
+          <input type="email" v-model="user.email" class="form-control" id="exampleInputEmail1"
+            aria-describedby="emailHelp" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+          <label for="exampleInputPassword1">密碼Password</label>
+          <input type="password" v-model="user.password" class="form-control" id="exampleInputPassword1"
+            placeholder="Password">
+        </div>
+        <button type="submit" class="btn btn-primary">登入</button>
+        <button type="button" class="btn btn-primary" v-on:click="logout">登出</button>
+        <button type="button" class="btn btn-info" v-on:click="getData">取得資料</button>
+      </form>
+    </div> <!-- container End-->
+  </div> <!-- login End-->
+
+  <!-- Optional JavaScript -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+  </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+
+  
+  <script>
+    // 自己的uuid
+    // const uuid = 'b580788b-f288-49ed-91ab-91e9bd538509';
+    const apiPath = 'https://course-ec-api.hexschool.io/api';
+    const app = new Vue({
+      el: '#app',
+      data: {
+        user: {
+          email: '',
+          password: '',
+        },
+      },
+      methods: {
+        signin() {
+          // POST api/auth/login 
+          // 這裡是固定路徑，不用填uuid
+          const api = `${apiPath}/auth/login`
+          axios.post(api, this.user)
+            .then(res => {
+              console.log(res)
+              const token = res.data.token;
+              const expired = res.data.expired;
+              // 這段是固定寫法，ajaxHomework --> 可以自定義
+              document.cookie = `ajaxHomeworkToken=${token}; expires=${new Date(expired*1000)}; path=/`
+              // login 後轉到產品頁面products.html
+              window.location = 'products.html'
+            })
+            .catch(error => {
+              console.log('有錯'+error)
+            });
+        },
+        logout() {
+          // someCookieName 可以自定義名字 
+          // 沒有token 、 expires 表示登出, path可寫可不寫
+          document.cookie = `ajaxHomeworkToken=; expires=; path=/`
+        },
+        getData() {
+          // 範例資料https://developer.mozilla.org/zh-CN/docs/Web/API/Document/cookie
+          this.token = document.cookie.replace(/(?:(?:^|.*;\s*)ajaxHomeworkToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+          console.log('token', this.token);
+          const api = `${apiPath}${uuid}/admin/ec/products`;
+          // ajax 
+          axios.defaults.headers.common.Authorization = `Bearer ${this.token}`
+          const vm = this;
+
+          axios.get(api)
+            .then(res => {
+              console.log(res);
+              vm.products = res.data.data;
+              vm.pagination = res.data.meta.pagination;
+            })
+            .catch(error => {
+              console.log(error)
+            })
+        }
+      },
+    })
+  </script>
+</body>
+
+</html>

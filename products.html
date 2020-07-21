@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css' />
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <!-- 後台產品List -->
+      <button type="button" v-on:click='openModal("newProduct")' class="btn btn-info " data-toggle="modal"
+        data-target="#productModal">
+        新增產品
+      </button>
+      <table class="table">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">分類</th>
+            <th scope="col">產品名稱</th>
+            <th scope="col">原價</th>
+            <th scope="col">售價</th>
+            <th scope="col">星等級</th>
+            <th scope="col">是否啟用</th>
+
+            <th scope="col">編輯</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 寫一個loop v-for 一定要搭配 key
+           products 是呼應JS的 products array-->
+          <tr v-for='(item) in products' :key='item.id'>
+            <td>{{item.category}}</td>
+            <td>{{item.title}}</td>
+            <td>{{item.origin_price}}</td>
+            <td>{{item.price}}</td>
+            <td>
+              {{item.selected}}
+            </td>
+            <td>
+              <span v-if='item.is_enabled' class="badge badge-success">啟用</span>
+              <span v-else class="badge badge-danger">未啟用</span>
+            </td>
+
+            <td>
+              <div class="btn-group"></div>
+              <button type="button" v-on:click='openModal("editProduct",item)' class="btn btn-primary btn-sm"><i
+                  class="fa fa-pencil" aria-hidden="true"></i></button>
+              <button type="button" v-on:click='openModal("delProduct",item)' class="btn btn-danger btn-sm"><i
+                  class="fa fa-trash" aria-hidden="true"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- pagination -->
+      <pagination :pages='pagination' @emit-pages='getProducts'></pagination>
+    <!-- Modal -->
+      <div class="modal fade" id="productModal" data-backdrop="static" tabindex="-1" role="dialog"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">新增產品</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <!-- 欄位 -->
+              <div class="row">
+                <div class="form-group col-4">
+                  <label for="title">標題</label>
+                  <input id="title" v-model="tempProduct.title" type="text" class="form-control" placeholder="請輸入標題">
+                </div>
+                <div class="form-group col-4">
+                  <label for="category">分類</label>
+                  <input id="category" v-model="tempProduct.category" type="text" class="form-control"
+                    placeholder="請輸入分類">
+                </div>
+                <div class="form-group col-4">
+                  <label for="unit">單位</label>
+                  <input id=" title" v-model="tempProduct.unit" type="text" class="form-control" placeholder="請輸入單位">
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-3">
+                  <label for="origin_price">原價</label>
+                  <input id="origin_price" v-model="tempProduct.origin_price" type="number" class=" form-control"
+                    placeholder="請輸入原價">
+                </div>
+                <div class="form-group col-3">
+                  <label for="price">售價</label>
+                  <input id=" price" v-model="tempProduct.price" type="number" class=" form-control"
+                    placeholder="請輸入售價">
+                </div>
+                <div class="form-group col-3">
+                  <div class="form-check ">
+                    <input id="is_enabled" v-model="tempProduct.is_enabled" class="form-check-input" type="checkbox"
+                      :true-value="1" :false-value="0">
+                    <label class="form-check-label" for="is_enabled">是否啟用</label>
+                  </div>
+                </div>
+                <div class="form-group col-3">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="form-group col-6">
+                  <label for="content">產品內容</label>
+                  <input id=" content" v-model="tempProduct.content" type="text" class="form-control"
+                    placeholder="請輸入產品內容">
+                </div>
+                <div class="form-group  col-6">
+                  <label for="description">產品描述</label>
+                  <input id="description" v-model="tempProduct.description" type="text" class="form-control"
+                    placeholder="請輸入產品描述">
+                </div>
+
+              </div>
+              <div class="row">
+                <div class="form-group col-6" v-for="i in 3" :key="i + 'img'">
+                  <label :for="'img'+i">輸入圖片網址</label>
+                  <input :id="'img' + i" v-model="tempProduct.imageUrl[i-1]" type="text" class="form-control"
+                    placeholder="請輸入圖片連結">
+                </div>
+                <img class="img-flx/uid col-6" :src="tempProduct.imageUrl" alt>
+                <div class="form-group">
+                  <label for="customFile">或上傳圖片
+                    <i v-if="status.fileUploading" class="fas fa-spinner fa-spin"></i>
+                  </label>
+                  <input type="file" id="customFile" ref='file' class='form-control' @change='uploadFile'>
+                </div>
+                <img class='img-fluid' :src="tempProduct.imageUrl[0]" alt>
+
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" @click="updateProduct">確認</button>
+              </div>
+            </div>
+          </div> <!-- modal-dialog -->
+        </div> <!-- productModal -->
+      </div>
+      <!-- Delete Modal -->
+      <div class="modal fade" id="delProductModal" data-backdrop="static" tabindex="-1" role="dialog"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="staticBackdropLabel">刪除產品</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              真的要刪除嗎？
+              <strong class="text-danger">{{tempProduct.title}}</strong>這是回不去的啊！
+            </div>
+            <div class="modal-footer">
+              <!-- 取消不用綁定，因為沒有要執行 -->
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+              <button type="button" v-on:click='delProduct' class="btn btn-primary">就是要刪</button>
+            </div>
+          </div>
+        </div>
+      </div> <!-- Delete Modal End-->
+    </div> <!-- container -->
+  </div><!-- productEdit -->
+ 
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+    integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+  </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+    integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="js/pagination.js"></script>
+  <script src="js/all.js"></script>
+</body>
+</html>
