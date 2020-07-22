@@ -17,17 +17,19 @@ new Vue({
     },
   },
   created() {
-    // eslint-disable-next-line max-len
-    this.user.token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+    // 寫在created 裡面，之後就不用重複寫
+    this.user.token = document.cookie.replace(/(?:(?:^|.*;\s*)ajaxHomeworkToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+    // ajaxHomeworkToken  TOKEN名稱 要跟著修改!!
     // 為了避免直接輸入products.html 網址做的安全裝置。沒有key入token，跳轉到login.html
-    // if (this.user.token === '') {
-    //   window.location = 'login.html';
-    // }
+    if (this.user.token === '') {
+      window.location = 'login.html';
+    }
     this.getProducts();
   },
   methods: {
     // 預設第一頁
     getProducts(page = 1) {
+      // this.user.token = document.cookie.replace(/(?:(?:^|.*;\s*)token\s*\=\s*([^;]*).*$)|^.*$/, "$1");
       const api = `https://course-ec-api.hexschool.io/api/${this.user.uuid}/admin/ec/products?page=${page}`;
       axios.defaults.headers.common.Authorization = `Bearer ${this.user.token}`;
       axios.get(api)
@@ -47,7 +49,7 @@ new Vue({
     openModal(isNew, item) {
       switch (isNew) {
         case 'newProduct':
-          this.tempProduct = {
+          this.$refs.productModal.tempProduct = {
             imageUrl: [],
           };
           this.isNew = true;
@@ -55,8 +57,9 @@ new Vue({
           break;
         case 'editProduct':
           // 先複製一份出來
-          // this.tempProduct = Object.assign({}, item);
-          this.getProducts(item.id);
+          this.tempProduct = Object.assign({}, item);
+          // this.getProducts(item.id);
+          this.$refs.productModal.getProduct(this.tempProduct.id);
           this.isNew = false;
           // $('#productModal').modal('show');
           break;
@@ -70,75 +73,7 @@ new Vue({
           break;
       }
     },
-    getProduct(id) {
-      const api = `https://course-ec-api.hexschool.io/api/${this.user.uuid}/admin/ec/product/${id}`;
-      axios.get(api)
-        .then((res) => {
-          this.tempProduct = res.data.data;
-          $('#productModal').modal('show');
-        })
-        .catch((error) => {
-          console.log('有錯啊!!!' + error);
-        });
-    },
-    updateProduct() {
-      let api = `https://course-ec-api.hexschool.io/${this.user.uuid}/admin/ec/product`;
-      let httpMethod = 'post';
-      if (!this.isNew) {
-        api = `https://course-ec-api.hexschool.io/${this.user.uuid}/admin/ec/product/${this.tempProduct.id}`;
-        httpMethod = 'patch';
-      }
-      axios.defaults.headers.common.Authorization = `Bearer ${this.user.token}`;
-      axios[httpMethod](api, this.tempProduct)
-        .then(() => {
-          $('#productMoal').modal('hide');
-          this.getProducts();
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
-    uploadFile() {
-      // 選取 DOM 中的檔案資訊
-      const uploadedfile = document.querySelector('#customFile').files[0];
-      console.dir(uploadedfile);
-      // 轉成 Form Data
-      const formData = new FormData();
-      formData.append('file', uploadedfile);
 
-      // 路由、驗證
-      const url = `https://course-ec-api.hexschool.io/api/${this.user.uuid}/admin/storage`;
-      // axios.defaults.headers.common.Authorization = `Bearer ${this.token}`;
-      this.status.fileUploading = truel
-      axios.post(url, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-        .then((res) => {
-          this.status.fileUploading = false;
-          if(res.status === 200){
-            this.tempProduct.imageUrl.push(res.data.data.path)
-          }
-          console.log(res);
-        })
-        .catch(() => {
-          console.log('照片不能超過2MB');
-          this.status.fileUploading = false;
-
-        });
-    },
-    delProduct() {
-      const api = `https://course-ec-api.hexschool.io/api/${this.user.uuid}/admin/ec/product/${this.tempProduct.id}`;
-      axios.defaults.headers.common.Authorization = `Bearer ${this.user.token}`;
-      axios.delete(api)
-        .then(() => {
-          $('#delProductModal').modal('hide');
-          this.getProducts();
-        })
-        .catch((error)=>{
-          console.log('錯了！錯了!'+ error)
-        })
-    },
+  
   },
 });

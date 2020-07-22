@@ -27,6 +27,7 @@ Vue.component('pagination', {
         @click.prevent="emitPages(item)"
       >{{ item }}</a>
     </li>
+    
     <li
       class="page-item"
       :class="{'disabled': pages.current_page === pages.total_pages}"
@@ -48,9 +49,7 @@ Vue.component('pagination', {
     };
   },
   // 由外到內使用props
-  props: {
-    pages: {},
-  },
+  props: ['pages'],
   methods: {
     // emit
     emitPages(item) {

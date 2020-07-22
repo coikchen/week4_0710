@@ -27,8 +27,8 @@
             placeholder="Password">
         </div>
         <button type="submit" class="btn btn-primary">登入</button>
-        <button type="button" class="btn btn-primary" v-on:click="logout">登出</button>
-        <button type="button" class="btn btn-info" v-on:click="getData">取得資料</button>
+        <!-- <button type="button" class="btn btn-primary" v-on:click="logout">登出</button>
+        <button type="button" class="btn btn-info" v-on:click="getData">取得資料</button> -->
       </form>
     </div> <!-- container End-->
   </div> <!-- login End-->
@@ -66,7 +66,7 @@
           // 這裡是固定路徑，不用填uuid
           const api = `${apiPath}/auth/login`
           axios.post(api, this.user)
-            .then(res => {
+            .then((res) => {
               console.log(res)
               const token = res.data.token;
               const expired = res.data.expired;
@@ -79,30 +79,30 @@
               console.log('有錯'+error)
             });
         },
-        logout() {
-          // someCookieName 可以自定義名字 
-          // 沒有token 、 expires 表示登出, path可寫可不寫
-          document.cookie = `ajaxHomeworkToken=; expires=; path=/`
-        },
-        getData() {
-          // 範例資料https://developer.mozilla.org/zh-CN/docs/Web/API/Document/cookie
-          this.token = document.cookie.replace(/(?:(?:^|.*;\s*)ajaxHomeworkToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-          console.log('token', this.token);
-          const api = `${apiPath}${uuid}/admin/ec/products`;
-          // ajax 
-          axios.defaults.headers.common.Authorization = `Bearer ${this.token}`
-          const vm = this;
+        // logout() {
+        //   // someCookieName 可以自定義名字 
+        //   // 沒有token 、 expires 表示登出, path可寫可不寫
+        //   document.cookie = `ajaxHomeworkToken=; expires=; path=/`
+        // },
+        // getData() {
+        //   // 範例資料https://developer.mozilla.org/zh-CN/docs/Web/API/Document/cookie
+        //   this.token = document.cookie.replace(/(?:(?:^|.*;\s*)ajaxHomeworkToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+        //   console.log('token', this.token);
+        //   const api = `${apiPath}${uuid}/admin/ec/products`;
+        //   // ajax 
+        //   axios.defaults.headers.common.Authorization = `Bearer ${this.token}`
+        //   const vm = this;
 
-          axios.get(api)
-            .then(res => {
-              console.log(res);
-              vm.products = res.data.data;
-              vm.pagination = res.data.meta.pagination;
-            })
-            .catch(error => {
-              console.log(error)
-            })
-        }
+        //   axios.get(api)
+        //     .then(res => {
+        //       console.log(res);
+        //       vm.products = res.data.data;
+        //       vm.pagination = res.data.meta.pagination;
+        //     })
+        //     .catch(error => {
+        //       console.log(error)
+        //     })
+        // }
       },
     })
   </script>
